@@ -1,2 +1,1 @@
-P
-ointers_arrays_strings
+pinters_arrays_strings
