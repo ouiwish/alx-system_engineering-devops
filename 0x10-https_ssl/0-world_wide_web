@@ -1,11 +1,12 @@
 #!/usr/bin/env bash
 # This script displays information about subdomains
-
 # Function to display subdomain information
 display_info() {
     local domain="$1"
     local subdomain="$2"
+    # shellcheck disable=SC2155
     local record_type=$(dig "$subdomain.$domain" | awk '/ANSWER SECTION/{getline; print $4}')
+    # shellcheck disable=SC2155
     local destination=$(dig "$subdomain.$domain" | awk '/ANSWER SECTION/{getline; print $5}')
     echo "The subdomain $subdomain is a $record_type record and points to $destination"
 }
