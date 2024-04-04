@@ -1,7 +1,33 @@
-#!/usr/bin/env bash
-# Script that sets the port 80
-# Requirement: Nginx must be running, and listening on port 80 of all the server’s active IPv4 IPs
-# Bug: sudo nginx status returns 'not running'; netstat -lpn does not show port 80
-# Solution: https://stackoverflow.com/questions/16021481/nginx-not-listening-to-port-80
-sudo sed -i "s/sites-enabled/sites-available/" /etc/nginx/nginx.conf
-sudo service nginx restart
+#!/bin/bash
+
+# Check if Nginx is running
+if ! pgrep nginx >/dev/null; then
+    echo "Nginx is not running. Starting Nginx..."
+    service nginx start
+else
+    echo "Nginx is already running."
+fi
+
+# Check if Nginx is listening on port 80 for all IPv4 IPs
+if ! nc -z localhost 80; then
+    echo "Nginx is not listening on port 80. Adjusting configuration..."
+
+    # Check if default Nginx configuration is properly configured for port 80
+    if grep -q "listen 80 default_server;" /etc/nginx/sites-available/default; then
+        echo "Nginx configuration seems correct. Restarting Nginx..."
+        service nginx restart
+    else
+        echo "Nginx configuration needs adjustment. Modifying configuration..."
+
+        # Modify the Nginx configuration to listen on port 80 for all IPv4 IPs
+        sed -i 's/listen 80;/listen 80 default_server;/' /etc/nginx/sites-available/default
+
+        # Restart Nginx to apply the changes
+        service nginx restart
+    fi
+else
+    echo "Nginx is already listening on port 80."
+fi
+
+echo "Nginx configuration and port listening status:"
+netstat -tuln
